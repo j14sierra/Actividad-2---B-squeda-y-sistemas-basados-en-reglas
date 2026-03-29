@@ -17,45 +17,118 @@ Sistema de búsqueda y cálculo de rutas óptimas utilizando el algoritmo A* con
 
 ## 📋 Requisitos
 
-- Python 3.8+
-- Node.js 14+
-- npm
+Antes de instalar, asegúrate de tener:
+- **Python 3.8 o superior** - [Descargar](https://www.python.org/downloads/)
+- **Node.js 14 o superior** - [Descargar](https://nodejs.org/)
+- **npm** (incluido con Node.js)
+- **Git** (opcional, pero recomendado)
 
 ## 🚀 Instalación
 
-### Backend
+### Paso 0: Clonar el repositorio (Opcional)
+
+Si aún no tienes el proyecto, clónalo:
+
+```bash
+git clone https://github.com/j14sierra/Actividad-2---B-squeda-y-sistemas-basados-en-reglas.git
+cd rutas-inteligentes
+```
+
+### Paso 1: Instalar dependencias del Backend
+
+Abre una **terminal en la carpeta `backend`**:
 
 ```bash
 cd backend
+```
+
+Instala las dependencias de Python:
+
+```bash
 pip install fastapi uvicorn
 ```
 
-### Frontend
+Si tienes problemas, intenta con:
+```bash
+python -m pip install fastapi uvicorn
+```
+
+### Paso 2: Instalar dependencias del Frontend
+
+Abre una **nueva terminal en la carpeta `frontend`**:
 
 ```bash
 cd frontend
+```
+
+Instala las dependencias de Node.js:
+
+```bash
 npm install
 ```
 
+Esto descargará todas las librerías necesarias (React, Vite, Leaflet, etc.).
+
 ## 🏃 Ejecución
 
-### Backend (Terminal 1)
+> ⚠️ **Importante**: Ejecuta primero el backend, luego el frontend en dos terminales diferentes.
+
+### Paso 1: Iniciar el Backend (Terminal 1)
+
+Abre una terminal y navega a la carpeta backend:
 
 ```bash
 cd backend
+```
+
+Inicia el servidor FastAPI:
+
+```bash
 python -m uvicorn main:app --reload
 ```
 
-El servidor estará disponible en `http://127.0.0.1:8000`
+**Deberías ver un mensaje como:**
+```
+INFO:     Uvicorn running on http://127.0.0.1:8000
+INFO:     Application startup complete
+```
 
-### Frontend (Terminal 2)
+✅ El backend está listo en `http://127.0.0.1:8000`
+
+### Paso 2: Iniciar el Frontend (Terminal 2)
+
+Abre una **nueva terminal** y navega a la carpeta frontend:
 
 ```bash
 cd frontend
+```
+
+Inicia el servidor de desarrollo:
+
+```bash
 npm run dev
 ```
 
-La aplicación se abrirá en `http://localhost:5173`
+**Deberías ver un mensaje como:**
+```
+VITE v4.x.x  ready in xxx ms
+
+➜  Local:   http://localhost:5173/
+➜  press h to show help
+```
+
+✅ La aplicación se abrirá automáticamente en `http://localhost:5173`
+
+### ¿No se abre automáticamente?
+
+Manual: Abre tu navegador y ve a `http://localhost:5173`
+
+### Verificación
+
+- ✅ Backend corriendo en `http://127.0.0.1:8000`
+- ✅ Frontend corriendo en `http://localhost:5173`
+- ✅ El mapa debe mostrarse con las estaciones
+- ✅ Los selects de inicio y destino deben estar llenos
 
 ## 📁 Estructura del Proyecto
 
@@ -76,6 +149,45 @@ rutas-inteligentes/
 │   └── eslint.config.js
 └── .gitignore
 ```
+
+## 🐛 Solución de Problemas (Troubleshooting)
+
+### ❌ Error: "No se puede conectar con el backend"
+
+**Solución:**
+1. Verifica que el backend esté corriendo: `http://127.0.0.1:8000`
+2. Abre la consola del navegador (F12) y busca errores CORS
+3. Reinicia ambos servidores
+
+### ❌ Error: "Puerto 8000 ya está en uso"
+
+**Solución:**
+```bash
+# En Windows
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+
+# En Mac/Linux
+lsof -i :8000
+kill -9 <PID>
+```
+
+### ❌ Error: "Node modules no encontrado"
+
+**Solución:**
+```bash
+cd frontend
+rm -r node_modules
+npm install
+```
+
+### ❌ El mapa no muestra estaciones
+
+**Solución:**
+1. Abre F12 (Consola del navegador)
+2. Verifica que no haya errores rojos
+3. Busca el log "Grafo cargado:" 
+4. Si no aparece, reinicia ambos servidores
 
 ## 🔌 API Endpoints
 
