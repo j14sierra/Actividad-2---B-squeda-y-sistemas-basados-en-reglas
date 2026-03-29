@@ -53,6 +53,9 @@ export default function App() {
   const [posCarro, setPosCarro] = useState(null);
   const [costoTotal, setCostoTotal] = useState(0);
   const [costoActual, setCostoActual] = useState(0);
+  const [porcentajeRecorrido, setPorcentajeRecorrido] = useState(0);
+  const [duracionEstimada, setDuracionEstimada] = useState(0);
+  const [tiempoRestante, setTiempoRestante] = useState(0);
 
   const animando = useRef(false);
 
@@ -103,10 +106,16 @@ export default function App() {
 
     setRutaReal([]);
     setCostoActual(0);
+    setPorcentajeRecorrido(0);
 
     let costoAcumulado = 0;
+    const duracionTotal = (tramos.length * 2000); // ~2 segundos por tramo
+    setDuracionEstimada(duracionTotal);
 
-    for (let tramo of tramos) {
+    const tiempoInicio = Date.now();
+
+    for (let i = 0; i < tramos.length; i++) {
+      const tramo = tramos[i];
       const origen = estaciones[tramo.from].coords;
       const destino = estaciones[tramo.to].coords;
 
@@ -116,12 +125,30 @@ export default function App() {
 
       for (let punto of segmento) {
         setPosCarro(punto);
+        
+        costoAcumulado += tramo.cost / segmento.length;
+        setCostoActual(parseFloat(costoAcumulado.toFixed(2)));
+        
+        const porcentaje = Math.round((costoAcumulado / tramos.reduce((sum, t) => sum + t.cost, 0)) * 100);
+        setPorcentajeRecorrido(Math.min(porcentaje, 100));
+        
+        const tiempoTranscurrido = (Date.now() - tiempoInicio) / 1000;
+        const velocidad = costoAcumulado / Math.max(tiempoTranscurrido, 1);
+        const costoRestante = tramos.reduce((sum, t) => sum + t.cost, 0) - costoAcumulado;
+        const tiempoEst = Math.ceil((costoRestante / velocidad));
+        setTiempoRestante(Math.max(tiempoEst, 0));
+        
         await new Promise(r => setTimeout(r, 30));
       }
-
-      costoAcumulado += tramo.cost;
-      setCostoActual(costoAcumulado);
     }
+
+    costoAcumulado = 0;
+    for (let tramo of tramos) {
+      costoAcumulado += tramo.cost;
+    }
+    setCostoActual(costoAcumulado);
+    setPorcentajeRecorrido(100);
+    setTiempoRestante(0);
 
     animando.current = false;
   };
@@ -140,6 +167,8 @@ export default function App() {
       setRutaReal([]);
       setPosCarro(null);
       setCostoActual(0);
+      setPorcentajeRecorrido(0);
+      setTiempoRestante(0);
 
       const res = await fetch(
         `http://127.0.0.1:8000/ruta?inicio=${inicio}&destino=${destino}`
@@ -284,10 +313,33 @@ export default function App() {
             <span style={{ fontSize: "clamp(10px, 1.5vw, 11px)", fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" }}>Total:</span>
             <span style={{ fontSize: "clamp(14px, 4vw, 18px)", fontWeight: 800, color: "#10b981" }}>{costoTotal}</span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12, gap: 10 }}>
             <span style={{ fontSize: "clamp(10px, 1.5vw, 11px)", fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" }}>Recorrido:</span>
             <span style={{ fontSize: "clamp(14px, 4vw, 18px)", fontWeight: 800, color: "#f59e0b" }}>{costoActual}</span>
           </div>
+
+          {/* Barra de Progreso */}
+          {porcentajeRecorrido > 0 && (
+            <div style={{ marginTop: 12, marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontSize: "clamp(9px, 1.5vw, 10px)", fontWeight: 600, color: "#cbd5e1" }}>Progreso</span>
+                <span style={{ fontSize: "clamp(10px, 1.5vw, 11px)", fontWeight: 700, color: "#60a5fa" }}>{porcentajeRecorrido}%</span>
+              </div>
+              <div style={{ width: "100%", height: 8, background: "rgba(30, 41, 59, 0.8)", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(96, 165, 250, 0.3)" }}>
+                <div style={{ height: "100%", background: "linear-gradient(90deg, #3b82f6, #60a5fa)", width: `${porcentajeRecorrido}%`, transition: "width 0.1s ease" }} />
+              </div>
+            </div>
+          )}
+
+          {/* Tiempo Restante */}
+          {tiempoRestante > 0 && (
+            <div style={{ marginTop: 12, padding: 10, background: "rgba(59, 130, 246, 0.15)", borderRadius: 8, border: "1px solid rgba(96, 165, 250, 0.3)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "clamp(9px, 1.5vw, 10px)", fontWeight: 600, color: "#cbd5e1" }}>⏱️ Tiempo restante:</span>
+                <span style={{ fontSize: "clamp(11px, 2vw, 13px)", fontWeight: 700, color: "#38bdf8" }}>{tiempoRestante}s</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* TRAMOS */}
