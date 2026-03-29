@@ -108,10 +108,7 @@ export default function App() {
     setCostoActual(0);
     setPorcentajeRecorrido(0);
 
-    let costoAcumulado = 0;
-    const duracionTotal = (tramos.length * 2000); // ~2 segundos por tramo
-    setDuracionEstimada(duracionTotal);
-
+    const costoTotal = tramos.reduce((sum, t) => sum + t.cost, 0);
     const tiempoInicio = Date.now();
 
     for (let i = 0; i < tramos.length; i++) {
@@ -123,18 +120,28 @@ export default function App() {
 
       setRutaReal(prev => [...prev, ...segmento]);
 
-      for (let punto of segmento) {
+      // Costo acumulado de tramos anteriores
+      const costoTramosPrevios = tramos.slice(0, i).reduce((sum, t) => sum + t.cost, 0);
+
+      for (let j = 0; j < segmento.length; j++) {
+        const punto = segmento[j];
         setPosCarro(punto);
         
-        costoAcumulado += tramo.cost / segmento.length;
-        setCostoActual(parseFloat(costoAcumulado.toFixed(2)));
+        // Progreso dentro del segmento actual (0 a 1)
+        const progresoEnSegmento = j / segmento.length;
         
-        const porcentaje = Math.round((costoAcumulado / tramos.reduce((sum, t) => sum + t.cost, 0)) * 100);
+        // Costo acumulado real = tramos anteriores + progreso del tramo actual
+        const costoAcumuladoReal = costoTramosPrevios + (tramo.cost * progresoEnSegmento);
+        
+        // Calcular porcentaje
+        const porcentaje = Math.round((costoAcumuladoReal / costoTotal) * 100);
         setPorcentajeRecorrido(Math.min(porcentaje, 100));
+        setCostoActual(parseFloat(costoAcumuladoReal.toFixed(2)));
         
+        // Calcular tiempo restante
         const tiempoTranscurrido = (Date.now() - tiempoInicio) / 1000;
-        const velocidad = costoAcumulado / Math.max(tiempoTranscurrido, 1);
-        const costoRestante = tramos.reduce((sum, t) => sum + t.cost, 0) - costoAcumulado;
+        const velocidad = costoAcumuladoReal / Math.max(tiempoTranscurrido, 1);
+        const costoRestante = costoTotal - costoAcumuladoReal;
         const tiempoEst = Math.ceil((costoRestante / velocidad));
         setTiempoRestante(Math.max(tiempoEst, 0));
         
@@ -142,11 +149,8 @@ export default function App() {
       }
     }
 
-    costoAcumulado = 0;
-    for (let tramo of tramos) {
-      costoAcumulado += tramo.cost;
-    }
-    setCostoActual(costoAcumulado);
+    // Finalizar
+    setCostoActual(costoTotal);
     setPorcentajeRecorrido(100);
     setTiempoRestante(0);
 
