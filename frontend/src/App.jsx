@@ -56,12 +56,14 @@ export default function App() {
   const [porcentajeRecorrido, setPorcentajeRecorrido] = useState(0);
   const [duracionEstimada, setDuracionEstimada] = useState(0);
   const [tiempoRestante, setTiempoRestante] = useState(0);
+  const [grafo, setGrafo] = useState({});
+  const [mostrarGrafo, setMostrarGrafo] = useState(false);
 
   const animando = useRef(false);
 
   // 🔥 Cargar estaciones desde backend
   useEffect(() => {
-    const cargarEstaciones = async () => {
+    const cargarDatos = async () => {
       try {
         const res = await fetch("http://127.0.0.1:8000/estaciones");
         const data = await res.json();
@@ -76,9 +78,18 @@ export default function App() {
       } catch (err) {
         console.error("Error cargando estaciones", err);
       }
+
+      // Cargar grafo
+      try {
+        const resGrafo = await fetch("http://127.0.0.1:8000/grafo");
+        const dataGrafo = await resGrafo.json();
+        setGrafo(dataGrafo);
+      } catch (err) {
+        console.error("Error cargando grafo", err);
+      }
     };
 
-    cargarEstaciones();
+    cargarDatos();
   }, []);
 
   // 🌐 Obtener ruta real (OSRM)
@@ -358,6 +369,57 @@ export default function App() {
             ))}
           </div>
         )}
+
+        {/* MAPA DEL GRAFO */}
+        <div style={{ marginTop: 18 }}>
+          <button
+            onClick={() => setMostrarGrafo(!mostrarGrafo)}
+            style={{
+              width: "100%",
+              padding: "clamp(10px, 2vw, 12px)",
+              background: "rgba(34, 197, 94, 0.2)",
+              border: "1px solid rgba(34, 197, 94, 0.4)",
+              borderRadius: 10,
+              color: "#22c55e",
+              fontWeight: 700,
+              fontSize: "clamp(10px, 1.5vw, 12px)",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              textTransform: "uppercase"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "rgba(34, 197, 94, 0.3)";
+              e.target.style.borderColor = "rgba(34, 197, 94, 0.6)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "rgba(34, 197, 94, 0.2)";
+              e.target.style.borderColor = "rgba(34, 197, 94, 0.4)";
+            }}
+          >
+            {mostrarGrafo ? "🔽 Ocultar" : "▶️ Ver"} Mapa del Grafo
+          </button>
+
+          {mostrarGrafo && (
+            <div style={{ marginTop: 12, padding: "clamp(10px, 2vw, 14px)", background: "rgba(34, 197, 94, 0.05)", borderRadius: 12, border: "1px solid rgba(34, 197, 94, 0.3)", maxHeight: "clamp(150px, 35vh, 250px)", overflowY: "auto" }}>
+              {Object.entries(grafo).map(([estacion, datos]) => (
+                <div key={estacion} style={{ marginBottom: 12, padding: 10, background: "rgba(15, 23, 42, 0.8)", borderRadius: 8, borderLeft: "3px solid #22c55e" }}>
+                  <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+                    <span style={{ fontSize: "clamp(10px, 1.5vw, 12px)", fontWeight: 700, color: "#22c55e" }}>📍 {estacion}</span>
+                    <span style={{ fontSize: "clamp(8px, 1.2vw, 10px)", color: "#64748b", marginLeft: 8 }}>({datos.nombre})</span>
+                  </div>
+                  <div style={{ paddingLeft: 10, borderLeft: "2px solid rgba(34, 197, 94, 0.3)" }}>
+                    {datos.conexiones.map((conexion, idx) => (
+                      <div key={idx} style={{ fontSize: "clamp(9px, 1.3vw, 11px)", color: "#cbd5e1", marginBottom: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span>→ {conexion.destino} <span style={{ color: "#94a3b8", fontSize: "clamp(8px, 1vw, 9px)" }}>({conexion.nombre_destino})</span></span>
+                        <span style={{ color: "#60a5fa", fontWeight: 700 }}>+{conexion.costo}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* MAPA */}

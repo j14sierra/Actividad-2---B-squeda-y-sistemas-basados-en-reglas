@@ -5,8 +5,11 @@ Sistema de búsqueda y cálculo de rutas óptimas utilizando el algoritmo A* con
 ## 🎯 Características
 
 - ✨ Visualización en tiempo real en mapas interactivos (Leaflet)
-- 🚗 Animación de recorrido del vehículo
+- 🚗 Animación de recorrido del vehículo en tiempo real
+- 📊 Barra de progreso dinámica con porcentaje
+- ⏱️ Contador de tiempo estimado restante
 - 🔍 Algoritmo A* para búsqueda óptima de rutas
+- 📈 Visualización completa del grafo de estaciones
 - 🌐 Backend con FastAPI
 - 📱 Interfaz responsive y moderna
 - 🗺️ Zoom automático en coordenadas
@@ -88,6 +91,31 @@ Retorna todas las estaciones disponibles con sus coordenadas.
 }
 ```
 
+### GET /grafo
+Retorna el grafo completo con todas las conexiones entre estaciones.
+
+**Respuesta:**
+```json
+{
+  "A": {
+    "nombre": "Mi Casa",
+    "conexiones": [
+      {"destino": "B", "nombre_destino": "Sena", "costo": 2},
+      {"destino": "D", "nombre_destino": "Barrio la Ronda", "costo": 4}
+    ]
+  },
+  "B": {
+    "nombre": "Sena",
+    "conexiones": [
+      {"destino": "A", "nombre_destino": "Mi Casa", "costo": 2},
+      {"destino": "C", "nombre_destino": "Villa del Bosque", "costo": 3},
+      {"destino": "E", "nombre_destino": "Martín Galeano", "costo": 2}
+    ]
+  }
+  ...
+}
+```
+
 ### GET /ruta?inicio=A&destino=F
 Calcula la ruta óptima entre dos estaciones usando A*.
 
@@ -130,11 +158,14 @@ Esto permite explorar primero los caminos más prometedores.
 - Las estaciones están mapeadas a coordenadas reales en Villavicencio, Colombia
 - La ruta en el mapa usa OSRM para calcular caminos más precisos
 - El zoom del mapa se ajusta automáticamente a todas las estaciones
+- La barra de progreso muestra el avance en tiempo real mientras se ejecuta el recorrido
+- Puedes ver el mapa completo del grafo expandiendo la sección "Ver Mapa del Grafo"
+- El tiempo restante se calcula dinámicamente según la velocidad de recorrido actual
 
-## 📧 Contacto
+## 📧 Integrante
 
-Para preguntas o sugerencias, contáctame.
+Johan Camilo Sierra
 
 ---
 
-**Hecho con ❤️ usando A* para búsqueda inteligente**
+**Hecho con ❤️ usando AI para búsqueda inteligente**
