@@ -109,3 +109,20 @@ def home():
 @app.get("/estaciones")
 def obtener_estaciones():
     return estaciones
+
+@app.get("/grafo")
+def obtener_grafo():
+    """Retorna el grafo con las conexiones entre estaciones"""
+    grafo_detallado = {}
+    for estacion, conexiones in grafo.items():
+        grafo_detallado[estacion] = {
+            "nombre": estaciones[estacion]["name"],
+            "conexiones": []
+        }
+        for destino, costo in conexiones.items():
+            grafo_detallado[estacion]["conexiones"].append({
+                "destino": destino,
+                "nombre_destino": estaciones[destino]["name"],
+                "costo": costo
+            })
+    return grafo_detallado
