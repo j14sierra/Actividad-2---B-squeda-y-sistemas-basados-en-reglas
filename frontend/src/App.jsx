@@ -92,7 +92,7 @@ export default function App() {
     cargarDatos();
   }, []);
 
-  // 🌐 Obtener ruta real (OSRM)
+  // 🌐 Obtener ruta real más corta entre dos estaciones (OSRM)
   const obtenerRutaReal = async (origen, destino) => {
     try {
       const url = `https://router.project-osrm.org/route/v1/driving/${origen[1]},${origen[0]};${destino[1]},${destino[0]}?overview=full&geometries=geojson`;
